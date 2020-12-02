@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, RaspSensor
 #from models import Person
 
 app = Flask(__name__)
@@ -19,6 +19,30 @@ MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 setup_admin(app)
+
+@app.route('/sensor/<string:sensor_name>', methods=['POST'])
+def add_data(sensor_name):  
+    body = request.get_json()
+    if body is None:
+        raise APIException("You need to specify the request body as a json object", status_code=400)
+    if 'sensor_name' not in body:
+        raise APIException('You need to specify the name room', status_code=400)
+    if 'temperature_measure' not in body:
+        raise APIException('You need to specify the temperature measure', status_code=400)
+    if 'humidity_measure' not in body:
+        raise APIException('You need to specify the humidity measure', status_code=400)
+
+    new_data = RaspSensorm(sensor_name = body['sensor_name'], temperature_measure = body["temperature_measure"], humidity_measure = body["humidity_measure"])
+    new_data.create()
+
+    return jsonify({'status': 'OK', 'message': 'New Data posted succesfully'}), 201
+
+@app.route('/sensor/<string:sensor_name>', methods=['GET'])
+def get_rooms(sensor_name):
+    sensor = RaspSensorm.read_by_sensor(sensor_name)
+    if rooms is None:
+        return "You need to specify the request sensor id as a json object, is empty", 400
+    return jsonify(sensor), 200
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)

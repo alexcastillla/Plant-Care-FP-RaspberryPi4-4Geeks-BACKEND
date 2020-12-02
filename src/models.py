@@ -1,19 +1,35 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Column, ForeignKey, Integer, String, Enum, Boolean, Text, Float, Table, Date
+from datetime import datetime
 
 db = SQLAlchemy()
 
-class User(db.Model):
+class RaspSensor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(80), unique=False, nullable=False)
-    is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    sensor_name = db.Column(db.String(255), unique=True, nullable=False)
+    temperature_measure = db.Column(db.Float, unique=False, nullable=False)
+    humidity_measure = db.Column(db.Float, unique=False, nullable=False)
+    time_stamp = db.Column(db.Date, unique=False, nullable=False)
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<RaspSensor %r>' % self.sensor_name
 
     def serialize(self):
         return {
             "id": self.id,
-            "email": self.email,
-            # do not serialize the password, its a security breach
+            "sensor_name": self.sensor_name,
+            "temperature_sensor": self.temperature_sensor,
+            "humidity_sensor": self.humidity_sensor,
+            "time_stamp": self.time_stamp,
         }
+
+    def create(self):
+        db.session.add(self)
+        db.session.commit()
+
+    @classmethod
+    def read_by_sensor(cls, sensor_id):
+        sensor_by_user = RaspSensor.query.filter_by(sensor_name = sensor_name)
+        sensor_from_user = list(map(lambda x: x.serialize(), sensor_by_user))
+        return sensor_from_user
+
